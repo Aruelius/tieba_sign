@@ -1,7 +1,7 @@
 # tieba_sign
 百度贴吧自动登录签到
 ## 效果
-![效果](./effect.png)
+![效果](./view.png)
 
 ## 使用教程(Centos)
 1、下载源码
