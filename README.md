@@ -44,7 +44,8 @@ Ubuntu安装Chromium的命令是：sudo apt-get install chromium-browser
 sudo apt-get install chromium-browser
 ```
 测试在Ubuntu跟Centos都通过，Windows应该也可以，但是有些地方应该改动，后续会上传Windows的。<br>
-签到100个吧之后需要验证码，后续会解决这个问题，100个以内的贴吧可以完美签到。
+签到100个吧之后需要验证码，后续会解决这个问题，100个以内的贴吧可以完美签到。<br>
+登录时候如果验证码是中文的，也支持输入。<br>
 如果遇到各种报Chrome的错，请运行：
 ``` sh
 pkill chrome*
