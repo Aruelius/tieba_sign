@@ -7,6 +7,8 @@ from PIL import Image
 import time
 import re
 import os
+import sys
+import json
 from config import *
 
 def login(url = 'https://tieba.baidu.com/index.html'):
@@ -51,14 +53,14 @@ def login(url = 'https://tieba.baidu.com/index.html'):
 		time.sleep(2.5)
 		cookies = driver.get_cookies()
 	elif verification == 2:
-		driver.save_screenshot("codingpy.png")
+		driver.save_screenshot("/tmp/codingpy.png")
 		time.sleep(3)
 		size = driver.find_element_by_id('TANGRAM__PSP_10__verifyCodeImg').size
 		left = int(element.location['x'])
 		top = int(element.location['y'])
 		right = int(element.location['x'] + element.size['width'])
 		bottom = int(element.location['y'] + element.size['height'])
-		im = Image.open('codingpy.png')
+		im = Image.open('/tmp/codingpy.png')
 		im = im.crop((left, top, right, bottom))
 		im.save('code.png')
 		ucode = input('请打开code.png查看验证码\n验证码:')
@@ -115,13 +117,51 @@ def getbar(cookies):
 
 	return tiebas
 
+def ruokuai(captcha_url):
+	"""
+	打码平台为若快打码:https://www.ruokuai.com/
+	"""
+	headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+	data = {
+		'username':username_rk,
+		'password':passwd_rk,
+		'typeid':3040, # 英数混合
+		'timeout':60,
+		'softid':124987,
+		'softkey':'a3ca33c7873c48d3b9c447dde8c7fde0',
+		'imageurl':captcha_url
+	}
+	r = requests.post('https://api.ruokuai.com/create.json', data = data, headers = headers)
+	resp = r.json()
+	return resp['Result']
+
+def sign_vcode(tieba, tbs, captcha_input_str, captcha_vcode_str, cookies, headers):
+
+	data = {
+		'ie':'utf-8',
+		'kw':tieba,
+		'tbs':tbs,
+		'captcha_input_str':captcha_input_str,
+		'captcha_vcode_str':captcha_vcode_str
+	}
+	r = s.post('http://tieba.baidu.com/sign/add', headers = headers, data = data, cookies = cookies)
+	try:
+		resp = r.json()
+		if resp['data']['errmsg'] == 'success':
+			print('贴吧:%s\t' % tieba, end = '')
+			print('状态:打码签到成功!')
+
+	except:
+		resp = r.json()
+		print('贴吧:%s\t' % tieba, end = '')
+		print('状态:%s' % resp['error'])
+
 def sign(cookies):
 
 	tiebas = getbar(cookies)
 	print('你一共有%s个贴吧' % len(tiebas))
 	for tieba in tiebas:
 		tbs = gettbs(cookies, tieba)
-		print(tbs)
 		headers = {
 			'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8',
 			'Origin':'http://tieba.baidu.com',
@@ -147,15 +187,50 @@ def sign(cookies):
 
 		except:
 			resp = r.json()
-			print('贴吧:%s\t' % tieba, end = '')
-			print('状态:%s' % resp['error'])
+			if resp['error'] == 'need vcode':
+				if rk_captcha == True:
+					captcha_vcode_str = resp['data']['captcha_vcode_str']
+					captcha_url = 'https://tieba.baidu.com/cgi-bin/genimg?%s' % captcha_vcode_str
+					captcha_input_str = ruokuai(captcha_url)
+					sign_vcode(tieba,tbs,captcha_input_str,captcha_vcode_str,cookies,headers)
+				else:
+					print('需要验证码,没开启打码平台,程序退出...')
+					os.system("pkill chrome*")
+					sys.exit(0)
+			else:
+				print('贴吧:%s\t' % tieba, end = '')
+				print('状态:%s' % resp['error'])
 
+def login_cookies():
 
-if __name__ == '__main__':
-	cookies = login()
-	s = requests.session()
-	for cookie in cookies:
-		s.cookies.set(cookie['name'],cookie['value'])
+	cookie = login()
+	for item in cookie:
+		s.cookies.set(item['name'],item['value'])
+	cookies = requests.utils.dict_from_cookiejar(s.cookies)
+	with open('.tieba_cookies','w') as fp:
+		json.dump(cookies,fp)
+		fp.close()
 	sign(s.cookies)
 	os.system("pkill chrome*")
 
+def main():
+
+	if os.path.exists('.tieba_cookies'):
+		with open('.tieba_cookies','r') as fp1:
+			load_cookies = json.load(fp1)
+		cookies = requests.utils.cookiejar_from_dict(load_cookies)
+		print('正在使用Cookies登录...')
+		r = s.get('http://tieba.baidu.com/sysmsg/query/userunread', cookies = cookies)
+		resp = r.json()
+		if resp['errmsg'] == '成功':
+			sign(cookies)
+			os.system("pkill chrome*")
+		else:
+			print('Cookies失效...正在重新登录...')
+			login_cookies()
+	else:
+		login_cookies()
+
+if __name__ == '__main__':
+	s = requests.session()
+	main()
