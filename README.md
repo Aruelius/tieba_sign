@@ -4,25 +4,22 @@
 ![效果](./view.png)
 
 ## 使用教程(Centos)
-1、下载源码
-``` sh
-git clone https://github.com/MikuShare/tieba_sign/ && cd tieba_sign
-```
-2、安装Chromium<br>
+1、安装Chromium<br>
 ``` sh
 yum install chromium
 ```
-3、安装[Chromedriver](https://chromedriver.storage.googleapis.com/index.html?path=73.0.3683.68/)<br>
+2、安装[Chromedriver](https://chromedriver.storage.googleapis.com/index.html?path=73.0.3683.68/)<br>
 ``` sh
 wget https://chromedriver.storage.googleapis.com/73.0.3683.68/chromedriver_linux64.zip && unzip chromedriver_linux64.zip
 mv chromedriver /usr/bin/ && chmod a+x /usr/bin/chromedriver
 ```
+3、下载源码
+``` sh
+git clone https://github.com/MikuShare/tieba_sign/ && cd tieba_sign/
+```
 4、安装依赖
 ``` sh
-pip install requests
-pip install lxml
-pip install selenium
-pip install Pillow
+pip install -r requirements.txt
 ```
 5、修改配置文件(config.py)
 ``` python
