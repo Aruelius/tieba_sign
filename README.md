@@ -66,7 +66,7 @@ python tieba.py   # 开始登录并签到
 - [ ] ~~多账号签到~~(已完成)
 ## 注意事项&已知BUG
 1.脚本使用Python3.7.2编写，运行的时候请使用Python3<br>
-2.Ubuntu安装Chromium的命令是：sudo apt-get install chromium-browser
+2.Ubuntu安装Chromium的命令是：
 ``` sh
 sudo apt-get install chromium-browser
 ```
