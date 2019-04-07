@@ -39,11 +39,11 @@ def login(user, username, passwd, url = 'https://tieba.baidu.com/index.html'):
 		verification = 1 # 单二代验证
 	except:
 		print('尝试验证码 + 二代验证中...')
-	try:
-		element = driver.find_element_by_id('TANGRAM__PSP_10__verifyCodeImg')
-		verification = 2 # 验证码+二代验证
-	except:
-		print('可能不需要验证码验证')
+	    try:
+		    element = driver.find_element_by_id('TANGRAM__PSP_10__verifyCodeImg')
+		    verification = 2 # 验证码+二代验证
+	    except:
+		    print('可能不需要验证码验证')
 	
 	if verification == 1:
 		time.sleep(1)
@@ -92,9 +92,7 @@ def login(user, username, passwd, url = 'https://tieba.baidu.com/index.html'):
 
 def gettbs(cookies, tieba):
 
-	headers = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36',
-	'Cache-Control':'no-cache',
-	'Pragma':'no-cache'}
+	headers = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36'}
 	r = requests.get('http://tieba.baidu.com/f?kw=%s' % tieba, headers = headers, cookies = cookies)
 	tbslist = re.findall("'tbs':'(.+?)'", r.text)
 	tbstr = "".join(tbslist)
