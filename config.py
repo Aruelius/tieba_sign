@@ -1,8 +1,33 @@
 # -*- coding: utf-8 -*-
-# 填写你的贴吧帐号密码
-username = ''
-passwd = ''
-# 填写你的打码平台帐号密码,如没有请留空,密码可以为32位加密后的MD5
-rk_captcha = False # 开启打码为True,关闭打码为False,开启打码后务必填写帐号密码。
-username_rk = ''
-passwd_rk = ''
+
+users = ['用户名']
+# 用户名,例如['用户1', '用户2', '用户3'] 一共3个用户
+
+accounts = {
+    '用户名': {
+        'username': '帐号',
+        'password': '密码'
+    }
+}
+
+"""
+用户名以及对应的帐号密码
+例如：
+accounts = {
+    '用户1': {
+        'username': '用户1的帐号',
+        'password': '用户1的密码.'
+    },
+    '用户2': {
+        'username': '用户2的帐号',
+        'password': '用户2的密码'
+    },
+    '用户3': {
+        'username': '用户3的帐号',
+        'password': '用户3的密码'
+    }
+}
+"""
+# 一定要按照users里面的用户名顺序来填写accounts！！！
+# 一定要按照users里面的用户名顺序来填写accounts！！！
+# 一定要按照users里面的用户名顺序来填写accounts！！！
