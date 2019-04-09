@@ -39,10 +39,10 @@ def login(user, username, passwd, url = 'https://tieba.baidu.com/index.html'):
 		verification = 1 # 单二代验证
 	except:
 		print('尝试验证码 + 二代验证中...')
-	    try:
+		try:
 		    element = driver.find_element_by_id('TANGRAM__PSP_10__verifyCodeImg')
 		    verification = 2 # 验证码+二代验证
-	    except:
+		except:
 		    print('可能不需要验证码验证')
 	
 	if verification == 1:
