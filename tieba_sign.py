@@ -427,13 +427,11 @@ def Start(tiebas, cookies):
 		i.join()
 
 def main():
-	global user, username, password, s, ua, gid, token, mailuser, mailpwd
+	global user, username, password, s, ua, gid, token
 	ua = UserAgent(verify_ssl=False).random
 	for user in users:
 		username = accounts[user]['username']
 		password = accounts[user]['password']
-		mailuser = accounts[user]['mailuser']
-		mailpwd = accounts[user]['mailpwd']
 		s = requests.session()
 		r = s.get('https://tieba.baidu.com')
 		if os.path.exists('.%s' % user):
