@@ -8,13 +8,15 @@
 
 ## 效果
 
-![alt 效果图](./view.png)
+![alt 效果图](./View.png)
 
 ## 使用教程
 
 ###### 1.安装依赖
 
-`pip install -r requirements.txt`
+```python
+pip install -r requirements.txt
+```
 
 ###### 2.修改配置文件(config.py)
 
