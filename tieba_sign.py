@@ -161,7 +161,6 @@ def checkSMS(authtoken, lstr, ltoken, codeString, vcodetype):
 
 def checkMail(authtoken, lstr, ltoken, codeString, vcodetype):
 	vcode = input('邮件验证码:')
-	print(vcode)
 	params = {
 		'authtoken': authtoken,
 		'type': 'email',
