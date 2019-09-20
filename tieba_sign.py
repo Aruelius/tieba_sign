@@ -346,7 +346,7 @@ def recognize_captcha(remote_url, rec_times):
                 print(ee)
 
         # 识别
-        url = "http://1i1.tw:10086/b"
+        url = "http://222.187.238.211:10086/b"
         files = {'image_file': ('captcha.jpg', BytesIO(response.content), 'application')}
         r = requests.post(url=url, files=files)
 
