@@ -1,5 +1,5 @@
-pycryptodome==3.8.2
-fake-useragent==0.1.11
-lxml==4.3.3
-requests==2.22.0
-rsa==4.0
+requests
+pyzbar
+Pillow
+lxml
+fake_useragent
