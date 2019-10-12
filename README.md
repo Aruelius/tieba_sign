@@ -1,15 +1,16 @@
 # Tieba_Sign
+
 [![](https://img.shields.io/github/license/Aruelius/tieba_sign.svg?color=ff69b4)](https://github.com/Aruelius/tieba_sign/blob/master/LICENSE)  [![](https://img.shields.io/badge/Python-3.7-ff69b4.svg)](hhttps://github.com/Aruelius/tieba_sign)  
 
-百度贴吧多线程自动登陆 / 自动签到 / 自动打码
+百度贴吧多线程扫码登陆 / 自动签到 / 自动打码
 
-经测试：在三个帐号，一共207个贴吧的情况下，全部签到完成速度为12s左右。(Cookies登录情况下)
+经测试：在三个帐号，一共207个贴吧的情况下，全部签到完成速度为5s左右。(Cookies登录情况下)
 
 **Use：Python3**
 
 ## 效果
 
-![alt 效果图](./View.png)
+![alt 效果图](./view.png)
 
 ## 使用教程
 
@@ -19,38 +20,12 @@
 pip install -r requirements.txt
 ```
 
-###### 2.修改配置文件(config.py)
+###### 2.增加用户配置 (tieba_sign.py)
 
 ```python
 users = ['用户名']
 # 用户名,例如['用户1', '用户2', '用户3'] 一共3个用户
-
-accounts = {
-    '用户名': {
-        'username': '帐号',
-        'password': '密码'
-    }
-}
-
-#用户名以及对应的帐号密码
-#例如：
-#accounts = {
-#    '用户1': {
-#        'username': '用户1的帐号',
-#        'password': '用户1的密码.'
-#    },
-#    '用户2': {
-#        'username': '用户2的帐号',
-#        'password': '用户2的密码'
-#    },
-#    '用户3': {
-#        'username': '用户3的帐号',
-#        'password': '用户3的密码'
-#    }
-#}
-# 一定要按照users里面的用户名顺序来填写accounts！！！
-# 一定要按照users里面的用户名顺序来填写accounts！！！
-# 一定要按照users里面的用户名顺序来填写accounts！！！
+# 请按照从前往后的顺序来依次进行登陆
 ```
 
 ### 运行
@@ -59,14 +34,15 @@ accounts = {
 python tieba_sign.py # 开始登录并签到
 ```
 
+------
+
+请注意，在最新版本中，需要扫码登陆，程序运行的时候，会问你是否有百度贴吧 or 百度 APP，如果有，那就会出现一条二维码链接，使用[^**IE浏览器**]打开此链接，并使用APP扫码登陆；如果没有这两个APP，同样会给出一条链接，该链接是解析二维码得到的链接，使用任意**已经登陆了百度贴吧网页版**的浏览器打开该链接—选择验证方式—输入验证码—点确认登录即可，脚本会自动完成登陆。
+
 ### TODO
 
-- 手机号码登陆（Working）
-
-- 扫码登陆，动态口令登陆（Working）
-
-- 自动获取QQ邮箱验证码，达到全自动登陆（Woking）
-
+- ~~手机号码登陆（Working）~~
+- 扫码登陆~~，动态口令登陆~~（已完成）
+- ~~自动获取QQ邮箱验证码，达到全自动登陆（Woking）~~
 - 添加打码平台（已完成）
 - 二次使用Cookie登陆（已完成）
 - 多线程签到（已完成）
@@ -77,8 +53,8 @@ python tieba_sign.py # 开始登录并签到
 1. Python3
 2. 支持Windows / Mac / Linux 全平台
 3. 使用自建免费打码平台
-4. 签到200个贴吧仅需10s左右
-5. 支持邮箱和手机验证
+4. 签到200个贴吧仅需5s左右
+5. 扫码登陆更安全
 
 ### 注意事项
 
@@ -99,6 +75,14 @@ python tieba_sign.py # 开始登录并签到
 - 遇到任何问题，请提交Issues！
 
 ### ChangeLog
+
+2019年10月12日
+
+1. 登录块从账号密码登陆改成了扫码登陆，因为账号密码登陆需要拉动滑块验证
+2. 验证码签到这块改善了代码，一般情况下不会再出现问题
+3. 代码逻辑有改善
+
+------
 
 2019年06月12日
 
@@ -135,3 +119,4 @@ python tieba_sign.py # 开始登录并签到
 
 [MIT](https://github.com/Aruelius/tieba_sign/blob/master/LICENSE)
 
+[^**IE浏览器**]: 因为Chrome浏览器打开二维码链是黑底，百度贴吧APP不能有效的识别，所以建议使用IE浏览器
