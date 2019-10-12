@@ -1,4 +1,4 @@
-# Tieba_Sign
+Tieba_Sign
 
 [![](https://img.shields.io/github/license/Aruelius/tieba_sign.svg?color=ff69b4)](https://github.com/Aruelius/tieba_sign/blob/master/LICENSE)  [![](https://img.shields.io/badge/Python-3.7-ff69b4.svg)](hhttps://github.com/Aruelius/tieba_sign)  
 
@@ -36,7 +36,7 @@ python tieba_sign.py # 开始登录并签到
 
 ------
 
-请注意，在最新版本中，需要扫码登陆，程序运行的时候，会问你是否有百度贴吧 or 百度 APP，如果有，那就会出现一条二维码链接，使用 **IE浏览器**[^1]打开此链接，并使用APP扫码登陆；如果没有这两个APP，同样会给出一条链接，该链接是解析二维码得到的链接，使用任意**已经登陆了百度贴吧网页版**的浏览器打开该链接—选择验证方式—输入验证码—点确认登录即可，脚本会自动完成登陆。
+请注意，在最新版本中，需要扫码登陆，程序运行的时候，会问你是否有百度贴吧 or 百度 APP，如果有，那就会出现一条二维码链接，使用 **IE浏览器** *(因为Chrome浏览器打开二维码链是黑底，百度贴吧APP不能有效的识别，所以建议使用IE浏览器)*打开此链接，并使用APP扫码登陆；如果没有这两个APP，同样会给出一条链接，该链接是解析二维码得到的链接，使用任意**已经登陆了百度贴吧网页版**的浏览器打开该链接 —> 选择验证方式 —> 输入验证码 —> 点确认登录即可，脚本会自动完成登陆。
 
 ### TODO
 
@@ -118,5 +118,3 @@ python tieba_sign.py # 开始登录并签到
 ### LICENSE
 
 [MIT](https://github.com/Aruelius/tieba_sign/blob/master/LICENSE)
-
-[^1]: 因为Chrome浏览器打开二维码链是黑底，百度贴吧APP不能有效的识别，所以建议使用IE浏览器
