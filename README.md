@@ -117,6 +117,6 @@ python tieba_sign.py # 开始登录并签到
 
 ### LICENSE
 
-[MIT
+[MIT](https://github.com/Aruelius/tieba_sign/blob/master/LICENSE)
 
 [^1]: 因为Chrome浏览器打开二维码链是黑底，百度贴吧APP不能有效的识别，所以建议使用IE浏览器
