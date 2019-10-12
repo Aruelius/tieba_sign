@@ -19,7 +19,13 @@
 ```python
 pip install -r requirements.txt
 ```
+```shell
+# Centos
+yum install zbar -y
 
+# Ubuntu
+sudo apt-get install libzbar-dev -y
+```
 ###### 2.增加用户配置 (tieba_sign.py)
 
 ```python
