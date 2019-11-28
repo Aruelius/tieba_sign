@@ -216,9 +216,14 @@ def sign_vcode(tieba, tbs, captcha_input_str, captcha_vcode_str):
         print('状态:%s' % resp['error'])
 
 def gettbs():
-    r = s.get('http://tieba.baidu.com/dc/common/tbs').json()
-    return r['tbs']
-
+    r = s.get('http://tieba.baidu.com/dc/common/tbs')
+    try:
+        resp = r.json()
+        return resp['tbs']
+    except:
+        time.sleep(1.2)
+        gettbs()
+        
 def sign(tieba):
     tbs = gettbs()
 
