@@ -262,6 +262,8 @@ def start(tiebas):
 
 def main():
     for user in users:
+        ua = UserAgent(verify_ssl=False).random
+        s.headers.update({'User-Agent': ua})
         if os.path.exists('.%s' % user):
             load_cookies = loadCookiesForUser(user)
             cookies = requests.utils.cookiejar_from_dict(load_cookies)
@@ -285,9 +287,7 @@ def main():
 if __name__ == "__main__":
     list = []
     users = ['', '']
-    ua = UserAgent(verify_ssl=False).random
     s = requests.session()
-    s.headers.update({'User-Agent': ua})
     start_time = time.time()
     main()
     end_time = time.time()
