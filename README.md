@@ -29,7 +29,7 @@ sudo apt-get install libzbar-dev -y
 ###### 2.增加用户配置 (tieba_sign.py)
 
 ```python
-users = ['用户名']
+user_lists = ['用户名']
 # 用户名,例如['用户1', '用户2', '用户3'] 一共3个用户
 # 请按照从前往后的顺序来依次进行登陆
 ```
