@@ -1,294 +1,316 @@
-#! /usr/bin/env python
-#coding:utf-8
+#!/usr/bin/env python3
+#coding=utf-8
+import hashlib
+import json
 import os
+import prettytable as pt
+import pyzbar.pyzbar as pyzbar
 import requests
 import time
-import json
-import pyzbar.pyzbar as pyzbar
-from PIL import Image
-from lxml import etree
 from io import BytesIO
-import threading
-from fake_useragent import UserAgent
+from PIL import Image
+from random import choice
+from threading import Thread
 
-def getTimestamp():
-    return str(int(time.time() * 1000))
+class Tieba(object):
+    def __init__(self, users):
+        self.users = users
+        self.tb = pt.PrettyTable()
+        self.s = requests.session()
 
-def saveCookiesForUser(user):
-    ck_dict = s.cookies.get_dict()
-    with open('.%s' % user, 'w') as f:
-        ck_str = json.dumps(ck_dict)
-        f.write(ck_str)
-        f.close()
+        self.MD5_KEY = 'tiebaclient!!!'
+        self.CAPTCHA_API = 'http://222.187.238.211:10086/b'
+        self.INDEX_URL = 'https://tieba.baidu.com/index.html'
+        self.TBS_URL = 'http://tieba.baidu.com/dc/common/tbs'
+        self.LIKES_URL = 'http://c.tieba.baidu.com/c/f/forum/like'
+        self.SIGN_URL = 'http://c.tieba.baidu.com/c/c/forum/sign'
+        self.GEN_IMG_URL = 'https://tieba.baidu.com/cgi-bin/genimg'
+        self.QR_CODE_URL = 'https://passport.baidu.com/v2/api/getqrcode'
+        self.UNICAST_URL = 'https://passport.baidu.com/channel/unicast'
+        self.USER_INFO_URL = 'https://tieba.baidu.com/f/user/json_userinfo'
+        self.QR_LOGIN_URL = 'https://passport.baidu.com/v3/login/main/qrbdusslogin'
+        self.HAO123_URL = 'https://user.hao123.com/static/crossdomain.php'
+        self.MY_LIKE_URL = 'http://tieba.baidu.com/f/like/mylike'
 
-def loadCookiesForUser(user):
-    with open('.%s' % user,'r') as fp1:
-        load_cookies = json.loads(fp1.read())
-    return load_cookies
+        self.ALL_TIEBA_LIST = []
 
-def unicast(channel_id):
-    tt = getTimestamp()
-    r = s.get(
-        url = 'https://passport.baidu.com/channel/unicast',
-        params = {
-            'channel_id': channel_id,
-            'tpl': 'tb',
-            'apiver': 'v3',
-            'callback': '',
-            'tt': tt,
-            '_': tt
+        self.tb.field_names = ['贴吧', '状态']
+        self.headers = {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Host': 'c.tieba.baidu.com',
+            'User-Agent': 'bdtb for Android 10.3.8.10'
         }
-    )
-    rsp = r.text.replace('(','').replace(')','')
-    rsp_json = json.loads(rsp)
-    try:
-        channel_v = json.loads(rsp_json['channel_v'])
-        return channel_v
-    except:
-        print('扫描超时')
 
-def qrbdusslogin(bduss):
-    tt = getTimestamp()
-    r = s.get(
-        url = 'https://passport.baidu.com/v3/login/main/qrbdusslogin',
-        params = {
-            'v': tt,
-            'bduss': bduss,
-            'u': 'https://tieba.baidu.com/index.html',
-            'loginVersion': 'v4',
-            'qrcode': '1',
-            'tpl': 'tb',
-            'apiver': 'v3',
-            'tt': tt,
-            'alg': 'v1',
-            'time': tt[10:],
-        }
-    )
-    rsp = json.loads(r.text.replace("'",'"'))
-    bdu = rsp['data']['hao123Param']
-    s.get(f'https://user.hao123.com/static/crossdomain.php?bdu={bdu}&t={tt}')
-    s.get('http://tieba.baidu.com/f/like/mylike?pn=')
+    def get_time_stamp(self):
+        return str(int(time.time() * 1000))
 
-def readQRcode(imgurl):
-    downQRcode(imgurl)
-    img = Image.open('qrcode.png')
-    barcodes = pyzbar.decode(img)
-    for barcode in barcodes:
-        barcodeData = barcode.data.decode("utf-8")
-        return barcodeData
+    def save_cookie(self, user):
+        cookie_dict = self.s.cookies.get_dict()
+        with open('.%s' % user, 'w') as f:
+            json.dump(cookie_dict, f)
+            f.close()
 
-def downQRcode(imgurl):
-    r = s.get(f'https://{imgurl}')
-    with open('qrcode.png', 'wb') as f:
-        f.write(r.content)
-        f.close()
+    def load_cookie(self, user):
+        with open('.%s' % user, 'r') as f:
+            cookie_dict = json.loads(f.read())
+            f.close()
+        for k, v in cookie_dict.items():
+            self.s.cookies.set(k, v)
+            
+    def unicast(self, channel_id):
+        tt = self.get_time_stamp()
+        r = self.s.get(
+            url = self.UNICAST_URL,
+            params = {
+                'channel_id': channel_id,
+                'tpl': 'tb',
+                'apiver': 'v3',
+                'callback': '',
+                'tt': tt,
+                '_': tt
+            }
+        )
+        rsp = r.text.replace('(','').replace(')','')
+        rsp_json = json.loads(rsp)
+        try:
+            channel_v = json.loads(rsp_json['channel_v'])
+            return channel_v
+        except:
+            print('扫描超时')
 
-def getQRcode():
-    tt = getTimestamp()
-    r = s.get(
-        url = 'https://passport.baidu.com/v2/api/getqrcode',
-        params = {
-            'lp': 'pc',
-            'qrloginfrom': 'pc',
-            'apiver': 'v3',
-            'tt': tt,
-            'tpl': 'tb',
-            '_': tt
-        }
-    )
-    app = input('有百度贴吧APP / 百度APP，请输入 1 ，没有请输入 2：')
-    imgurl = r.json()['imgurl']
-    while True:
-        if app == '1':
-            print(f'请使用浏览器打开二维码链接并使用百度贴吧APP / 百度APP扫描：https://{imgurl}')
-            print('注意：请使用IE浏览器打开二维码链接！！！')
-            break
-        elif app == '2':
-            qrurl = readQRcode(imgurl)
-            print(f'请使用已经登录了百度贴吧网页端的浏览器打开链接并按照提示完成登陆：{qrurl}')
-            break
-    
-    channel_id = r.json()['sign']
-    return channel_id
+    def qr_login_set_cookie(self, bduss):
+        tt = self.get_time_stamp()
+        r = self.s.get(
+            url = self.QR_LOGIN_URL,
+            params = {
+                'v': tt,
+                'bduss': bduss,
+                'u': self.INDEX_URL,
+                'loginVersion': 'v4',
+                'qrcode': '1',
+                'tpl': 'tb',
+                'apiver': 'v3',
+                'tt': tt,
+                'alg': 'v1',
+                'time': tt[10:]
+            }
+        )
+        rsp = json.loads(r.text.replace("'",'"'))
+        bdu = rsp['data']['hao123Param']
+        self.s.get(f'{self.HAO123_URL}?bdu={bdu}&t={tt}')
+        self.s.get(self.MY_LIKE_URL)
 
-def qrlogin(user):
-    channel_id = getQRcode()
-    while True:
-        rsp = unicast(channel_id)
-        if rsp:
-            if rsp['status'] == 1:
-                print('扫描成功,请在手机端确认登录!')
-            if rsp['status'] == 0:
+    def down_qr_code(self, imgurl):
+        r = self.s.get(f'https://{imgurl}')
+        with open('qrcode.png', 'wb') as f:
+            f.write(r.content)
+            f.close()
+
+    def read_qr_code(self, imgurl):
+        self.down_qr_code(imgurl)
+        img = Image.open('qrcode.png')
+        barcodes = pyzbar.decode(img)
+        for barcode in barcodes:
+            barcodeData = barcode.data.decode("utf-8")
+            return barcodeData
+
+    def get_qr_code(self):
+        tt = self.get_time_stamp()
+        r = self.s.get(
+            url = self.QR_CODE_URL,
+            params = {
+                'lp': 'pc',
+                'qrloginfrom': 'pc',
+                'apiver': 'v3',
+                'tt': tt,
+                'tpl': 'tb',
+                '_': tt
+            }
+        )
+        app = input('有百度贴吧APP / 百度APP，请输入 1 ，没有请输入 2\n：')
+        imgurl = r.json()['imgurl']
+        while True:
+            if app == '1':
+                print(f'请使用浏览器打开二维码链接并使用百度贴吧APP / 百度APP扫描：https://{imgurl}')
+                print('注意：请使用IE浏览器打开二维码链接！！！')
+                break
+            elif app == '2':
+                qrurl = self.read_qr_code(imgurl)
+                os.remove('./qrcode.png')
+                print(f'请使用已经登录了百度贴吧网页端的浏览器打开链接并按照提示完成登陆：{qrurl}')
+                break
+        channel_id = r.json()['sign']
+        return channel_id
+
+    def qr_login(self, user):
+        channel_id = self.get_qr_code()
+        while True:
+            rsp = self.unicast(channel_id)
+            if rsp and rsp['status'] == 1: print('扫描成功,请在手机端确认登录!')
+            if rsp and rsp['status'] == 0:
                 print('确认登陆成功')
                 bduss = rsp['v']
-                # print(f'bduss:{bduss}')
-                qrbdusslogin(bduss)
-                saveCookiesForUser(user)
+                self.qr_login_set_cookie(bduss)
+                self.save_cookie(user)
                 break
 
-def login(user):
-    qrlogin(user)
-    print('Login : True')
-    load_cookies = loadCookiesForUser(user)
-    cookies = requests.utils.cookiejar_from_dict(load_cookies)
-    s.cookies.update(cookies)
-    tiebas = getbar()
-    list.extend(tiebas)
-    start(tiebas)
+    def login(self, user):
+        self.s.cookies.clear()
+        self.qr_login(user)
+        print('Login: True')
+        tiebas = self.get_like_tiebas()
+        self.ALL_TIEBA_LIST.extend(tiebas)
+        self.start(tiebas)
 
-def checkLogin():
-    r = s.get('https://tieba.baidu.com/f/user/json_userinfo')
-    try:
-        print(r.json()['data']['user_name_weak'])
-        return True
-    except:
-        return False
+    def check_login(self):
+        r = self.s.get(self.TBS_URL)
+        rsp = r.json()
+        return True if rsp['is_login'] == 1 else False
 
-def getbar():
-    url = 'http://tieba.baidu.com/f/like/mylike?pn='
-    r_bar = s.get(url + '1')
-    webpage = etree.HTML(r_bar.text)
+    def calc_sign(self, str_dict):
+        md5 = hashlib.md5()
+        md5.update((
+            ''.join(
+                '%s=%s' % (k, v)
+                for k, v in str_dict.items()
+            ) + self.MD5_KEY).encode('utf-8')
+        )
+        return md5.hexdigest().upper()
 
-    pages = ['1']
-    pns = webpage.xpath('//*[@id="j_pagebar"]/div/a') # 判断页数
-    for pn in pns:
-        if pn.text.isnumeric():
-            pages.append(pn.text)
+    def get_bduss_stoken(self):
+        bduss = self.s.cookies.get_dict()['BDUSS']
+        stoken = self.s.cookies.get_dict()['STOKEN']
+        return bduss, stoken
 
-    tiebas = []
-    for pageid in pages:
-        r_bar_1 = s.get(url + pageid)
-        webpage = etree.HTML(r_bar_1.text)
-        tag_a = webpage.xpath('//a[@title]') # 获取贴吧
-        for a in tag_a:
-            if a.text:
-                tiebas.append(a.text)
-    return tiebas
-
-def recognize_captcha(remote_url, rec_times):
-    headers = {
-        'user-agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/\
-                537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36"
-    }
-
-    for _ in range(rec_times):
-        # 请求
-        while True:
+    def get_like_tiebas(self):
+        bduss, stoken = self.get_bduss_stoken()
+        data = {
+            'BDUSS': bduss,
+            'stoken': stoken,
+            'timestamp': self.get_time_stamp()
+        }
+        data['sign'] = self.calc_sign(data)
+        for _ in range(5):
             try:
-                response = requests.request("GET", remote_url, headers=headers, timeout=6)
-                if response.text:
-                    break
-                else:
-                    print("retry, response.text is empty")
-            except Exception as ee:
-                print(ee)
+                r = requests.post(
+                    url = self.LIKES_URL,
+                    data = data,
+                    cookies = self.s.cookies,
+                    headers = self.headers,
+                    timeout=3
+                )
+            except:
+                continue
+        return [tieba['name'] for tieba in r.json()['forum_list']]
 
-        # 识别
-        url = "http://222.187.238.211:10086/b"
-        files = {'image_file': ('captcha.jpg', BytesIO(response.content), 'application')}
-        r = requests.post(url=url, files=files)
+    def get_tbs(self):
+        r = self.s.get(self.TBS_URL).json()
+        return r['tbs']
 
-        # 识别结果
+    def recognize_captcha(self, remote_url, rec_times=3):
+        for _ in range(rec_times):
+            while True:
+                try:
+                    response = requests.get(remote_url, timeout=6)
+                    if response.text:
+                        break
+                    else:
+                        print("retry, response.text is empty")
+                except Exception as ee:
+                    print(ee)
+
+            files = {'image_file': ('captcha.jpg', BytesIO(response.content), 'application')}
+            r = requests.post(self.CAPTCHA_API, files=files)
+            try:
+                predict_text = json.loads(r.text)["value"]
+                return predict_text
+            except:
+                continue
+
+    def sign_with_vcode(self, tieba, tbs, captcha_input_str, captcha_vcode_str):
+        """
+        由于暂时没碰见需要验证码的情况,
+        故此处只是print
+        """
+        print(f'{tieba} 需要验证码')
+
+    def sign(self, tieba):
+        tbs = self.get_tbs()
+        bduss, stoken = self.get_bduss_stoken()
+        data = {
+            'BDUSS': bduss,
+            'kw': tieba,
+            'stoken': stoken,
+            'tbs': tbs,
+            'timestamp': self.get_time_stamp()
+        }
+        sign = self.calc_sign(data)
+        data['sign'] = sign
+        for _ in range(5):
+            try:
+                r = requests.post(
+                    url = self.SIGN_URL,
+                    data = data,
+                    cookies = self.s.cookies,
+                    headers = self.headers,
+                    timeout=5
+                )
+                rsp = r.json()
+                break
+            except:
+                continue
         try:
-            predict_text = json.loads(r.text)["value"]
-            return predict_text
+            if rsp['user_info']['is_sign_in'] == 1:
+                self.tb.add_row([tieba, '签到成功'])
         except:
-            recognize_captcha(remote_url, rec_times)
-
-def sign_vcode(tieba, tbs, captcha_input_str, captcha_vcode_str):
-
-    data = {
-        'ie':'utf-8',
-        'kw':tieba,
-        'tbs':tbs,
-        'captcha_input_str':captcha_input_str,
-        'captcha_vcode_str':captcha_vcode_str
-    }
-    r = s.post('http://tieba.baidu.com/sign/add', data = data)
-    try:
-        resp = r.json()
-        if resp['data']['errmsg'] == 'success':
-            print('贴吧:%s\t' % tieba, end = '')
-            print('状态:打码签到成功!')
-
-    except:
-        print('贴吧:%s\t' % tieba, end = '')
-        print('状态:%s' % resp['error'])
-
-def gettbs():
-    r = s.get('http://tieba.baidu.com/dc/common/tbs')
-    try:
-        resp = r.json()
-        return resp['tbs']
-    except:
-        time.sleep(1.2)
-        gettbs()
-        
-def sign(tieba):
-    tbs = gettbs()
-
-    data = {
-        'ie':'utf-8',
-        'kw':tieba,
-        'tbs':tbs
-    }
-    r = s.post('http://tieba.baidu.com/sign/add', data = data)
-    try:
-        resp = r.json()
-        if resp['data']['errmsg'] == 'success':
-            print('贴吧:%s\t' % tieba, end = '')
-            print('状态:签到成功!')
-    except:
-        if resp['error'] == 'need vcode': # 需要验证码
-            captcha_vcode_str = resp['data']['captcha_vcode_str']
-            captcha_url = 'https://tieba.baidu.com/cgi-bin/genimg?%s' % captcha_vcode_str
-            captcha_input_str = recognize_captcha(captcha_url, 1)
-            sign_vcode(tieba,tbs,captcha_input_str,captcha_vcode_str)
-        else:
-            print('贴吧:%s\t' % tieba, end = '') # 黑名单或者别的情况
-            print('状态:%s' % resp['error'])
-
-def start(tiebas):
-    threads=[] 
-    for tieba in tiebas:
-        t=threading.Thread(target=sign,args=(tieba,))
-        threads.append(t)
-    
-    for tieba in threads:
-        tieba.start()
-    
-    for tieba in threads:
-        tieba.join()
-
-def main():
-    for user in users:
-        ua = UserAgent(verify_ssl=False).random
-        s.headers.update({'User-Agent': ua})
-        if os.path.exists('.%s' % user):
-            load_cookies = loadCookiesForUser(user)
-            cookies = requests.utils.cookiejar_from_dict(load_cookies)
-            s.cookies.update(cookies)
-            if checkLogin():
-                print('CookieLogin : True')
-                tiebas = getbar()
-                list.extend(tiebas)
-                start(tiebas)
+            if rsp['error_msg'] == 'need vcode': # 这里也不清楚手机端需不需要验证码
+                captcha_vcode_str = rsp['data']['captcha_vcode_str']
+                captcha_url = f'{self.GEN_IMG_URL}?{captcha_vcode_str}'
+                captcha_input_str = self.recognize_captcha(captcha_url)
+                self.sign_with_vcode(tieba, tbs, captcha_input_str, captcha_vcode_str)
             else:
-                 print('%sCookies失效...正在重新登录...' % user)
-                 login(user)
+                self.tb.add_row([tieba, rsp['error_msg']])
+
+    def start(self, tiebas):
+        threads = []
+        for tieba in tiebas:
+            t = Thread(target=self.sign, args=(tieba,))
+            threads.append(t)
+            
+        for tieba in threads:
+            tieba.start()
+
+        for tieba in threads:
+            tieba.join()
+
+    def main(self):
+        start_time = time.time()
+        for user in self.users:
+            print(f'当前登陆: {user}')
+            if os.path.exists('.%s' % user):
+                self.load_cookie(user)
+                if self.check_login():
+                    print('CookieLogin: True')
+                    tiebas = self.get_like_tiebas()
+                    self.ALL_TIEBA_LIST.extend(tiebas)
+                    self.start(tiebas)
+                else:
+                    print('%sCookies失效...正在重新登录...' % user)
+                    self.login(user)
+            else:
+                self.login(user)
+            self.tb.align = 'l'
+            print(self.tb)
+            self.tb.clear_rows()
         else:
-            login(user)
-
-        s.cookies.clear()
-        s.headers.clear()
-
-
-
+            end_time = time.time()
+            print('总共签到{}个贴吧,耗时:{}秒'.format(
+                len(self.ALL_TIEBA_LIST),
+                int(end_time - start_time)
+                )
+            )
+ 
 if __name__ == "__main__":
-    list = []
-    users = ['', '']
-    s = requests.session()
-    start_time = time.time()
-    main()
-    end_time = time.time()
-    print('总共签到{}个贴吧,耗时:{}秒'.format(len(list), int(end_time - start_time)))
+    user_lists = [''] # 贴吧用户名列表，例如 ['张三', '李四']
+    tieba = Tieba(user_lists)
+    tieba.main()
