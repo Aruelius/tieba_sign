@@ -1,5 +1,4 @@
 requests
 pyzbar
 Pillow
-lxml
-fake_useragent
+prettytable
