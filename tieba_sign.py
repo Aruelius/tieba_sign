@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#coding=utf-8
+# coding=utf-8
 import hashlib
 import json
 import os
@@ -9,12 +9,13 @@ import requests
 import time
 from io import BytesIO
 from PIL import Image
-from random import choice
 from threading import Thread
 
+
 class Tieba(object):
-    def __init__(self, users):
+    def __init__(self, users, sckey, **kw):
         self.users = users
+        self.sckey = sckey
         self.tb = pt.PrettyTable()
         self.s = requests.session()
 
@@ -56,12 +57,12 @@ class Tieba(object):
             f.close()
         for k, v in cookie_dict.items():
             self.s.cookies.set(k, v)
-            
+
     def unicast(self, channel_id):
         tt = self.get_time_stamp()
         r = self.s.get(
-            url = self.UNICAST_URL,
-            params = {
+            url=self.UNICAST_URL,
+            params={
                 'channel_id': channel_id,
                 'tpl': 'tb',
                 'apiver': 'v3',
@@ -70,19 +71,19 @@ class Tieba(object):
                 '_': tt
             }
         )
-        rsp = r.text.replace('(','').replace(')','')
+        rsp = r.text.replace('(', '').replace(')', '')
         rsp_json = json.loads(rsp)
         try:
             channel_v = json.loads(rsp_json['channel_v'])
             return channel_v
-        except:
+        except Exception:
             print('扫描超时')
 
     def qr_login_set_cookie(self, bduss):
         tt = self.get_time_stamp()
         r = self.s.get(
-            url = self.QR_LOGIN_URL,
-            params = {
+            url=self.QR_LOGIN_URL,
+            params={
                 'v': tt,
                 'bduss': bduss,
                 'u': self.INDEX_URL,
@@ -95,7 +96,7 @@ class Tieba(object):
                 'time': tt[10:]
             }
         )
-        rsp = json.loads(r.text.replace("'",'"'))
+        rsp = json.loads(r.text.replace("'", '"'))
         bdu = rsp['data']['hao123Param']
         self.s.get(f'{self.HAO123_URL}?bdu={bdu}&t={tt}')
         self.s.get(self.MY_LIKE_URL)
@@ -117,8 +118,8 @@ class Tieba(object):
     def get_qr_code(self):
         tt = self.get_time_stamp()
         r = self.s.get(
-            url = self.QR_CODE_URL,
-            params = {
+            url=self.QR_CODE_URL,
+            params={
                 'lp': 'pc',
                 'qrloginfrom': 'pc',
                 'apiver': 'v3',
@@ -146,7 +147,8 @@ class Tieba(object):
         channel_id = self.get_qr_code()
         while True:
             rsp = self.unicast(channel_id)
-            if rsp and rsp['status'] == 1: print('扫描成功,请在手机端确认登录!')
+            if rsp and rsp['status'] == 1:
+                print('扫描成功,请在手机端确认登录!')
             if rsp and rsp['status'] == 0:
                 print('确认登陆成功')
                 bduss = rsp['v']
@@ -193,13 +195,13 @@ class Tieba(object):
         for _ in range(5):
             try:
                 r = requests.post(
-                    url = self.LIKES_URL,
-                    data = data,
-                    cookies = self.s.cookies,
-                    headers = self.headers,
+                    url=self.LIKES_URL,
+                    data=data,
+                    cookies=self.s.cookies,
+                    headers=self.headers,
                     timeout=3
                 )
-            except:
+            except Exception:
                 continue
         return [tieba['name'] for tieba in r.json()['forum_list']]
 
@@ -224,7 +226,7 @@ class Tieba(object):
             try:
                 predict_text = json.loads(r.text)["value"]
                 return predict_text
-            except:
+            except Exception:
                 continue
 
     def sign_with_vcode(self, tieba, tbs, captcha_input_str, captcha_vcode_str):
@@ -249,41 +251,59 @@ class Tieba(object):
         for _ in range(5):
             try:
                 r = requests.post(
-                    url = self.SIGN_URL,
-                    data = data,
-                    cookies = self.s.cookies,
-                    headers = self.headers,
+                    url=self.SIGN_URL,
+                    data=data,
+                    cookies=self.s.cookies,
+                    headers=self.headers,
                     timeout=5
                 )
                 rsp = r.json()
                 break
-            except:
+            except Exception:
                 continue
         try:
             if rsp['user_info']['is_sign_in'] == 1:
                 self.tb.add_row([tieba, '签到成功'])
-        except:
-            if rsp['error_msg'] == 'need vcode': # 这里也不清楚手机端需不需要验证码
+                return 0
+        except Exception:
+            if rsp['error_msg'] == 'need vcode':  # 这里也不清楚手机端需不需要验证码
                 captcha_vcode_str = rsp['data']['captcha_vcode_str']
                 captcha_url = f'{self.GEN_IMG_URL}?{captcha_vcode_str}'
                 captcha_input_str = self.recognize_captcha(captcha_url)
                 self.sign_with_vcode(tieba, tbs, captcha_input_str, captcha_vcode_str)
             else:
                 self.tb.add_row([tieba, rsp['error_msg']])
+                return rsp['error_msg']
 
     def start(self, tiebas):
         threads = []
         for tieba in tiebas:
             t = Thread(target=self.sign, args=(tieba,))
             threads.append(t)
-            
+
         for tieba in threads:
             tieba.start()
 
         for tieba in threads:
             tieba.join()
 
+    def send_msg(self, _title="标题", _context="正文"):
+        url = "https://sc.ftqq.com/%s.send" % (self.sckey)
+        data = {
+            "text": "%s" % (_title),
+            "desp": "%s" % (_context)
+        }
+        print("向Server酱推送消息中……")
+        try:
+            res = requests.post(url=url, data=data)
+            msg_back = json.loads(res.text)
+            print("返回值：%s" % (msg_back["errmsg"]))
+        except Exception:
+            print("消息发送错误")
+
     def main(self):
+        time_now = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+        print("当前时间："+time_now)
         start_time = time.time()
         for user in self.users:
             print(f'当前登陆: {user}')
@@ -293,7 +313,7 @@ class Tieba(object):
                     print('CookieLogin: True')
                     tiebas = self.get_like_tiebas()
                     self.ALL_TIEBA_LIST.extend(tiebas)
-                    self.start(tiebas)
+                    self.start(tiebas)  # 启动多线程签到
                 else:
                     print('%sCookies失效...正在重新登录...' % user)
                     self.login(user)
@@ -304,13 +324,22 @@ class Tieba(object):
             self.tb.clear_rows()
         else:
             end_time = time.time()
-            print('总共签到{}个贴吧,耗时:{}秒'.format(
+            result = '总共签到{}个贴吧,耗时:{}秒'.format(
                 len(self.ALL_TIEBA_LIST),
                 int(end_time - start_time)
-                )
             )
- 
+            print(result)
+        if self.sckey != "":
+            msg_title = "签到反馈"
+            msg_context = result+"\n"+time_now
+            self.send_msg(_title=msg_title, _context=msg_context)
+        else:
+            print("跳过消息推送")
+        print("运行完毕")
+
+
 if __name__ == "__main__":
-    user_lists = [''] # 贴吧用户名列表，例如 ['张三', '李四']
-    tieba = Tieba(user_lists)
+    user_lists = ['xxx']  # 贴吧用户名列表，例如 ['张三', '李四']
+    sckey = ""  # 用于server酱的推送，可以到 http://sc.ftqq.com/?c=code 获取
+    tieba = Tieba(users=user_lists, sckey=sckey)
     tieba.main()
