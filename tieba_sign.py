@@ -1,18 +1,16 @@
 #!/usr/bin/env python3
-# coding=utf-8
+#coding=utf-8
 import hashlib
 import json
 import os
 import prettytable as pt
-# import pyzbar.pyzbar as pyzbar
+import pyzbar.pyzbar as pyzbar
 import requests
 import time
 from io import BytesIO
-# from PIL import Image
+from PIL import Image
 from random import choice
 from threading import Thread
-import schedule
-
 
 class Tieba(object):
     def __init__(self, users):
@@ -58,12 +56,12 @@ class Tieba(object):
             f.close()
         for k, v in cookie_dict.items():
             self.s.cookies.set(k, v)
-
+            
     def unicast(self, channel_id):
         tt = self.get_time_stamp()
         r = self.s.get(
-            url=self.UNICAST_URL,
-            params={
+            url = self.UNICAST_URL,
+            params = {
                 'channel_id': channel_id,
                 'tpl': 'tb',
                 'apiver': 'v3',
@@ -72,7 +70,7 @@ class Tieba(object):
                 '_': tt
             }
         )
-        rsp = r.text.replace('(', '').replace(')', '')
+        rsp = r.text.replace('(','').replace(')','')
         rsp_json = json.loads(rsp)
         try:
             channel_v = json.loads(rsp_json['channel_v'])
@@ -83,8 +81,8 @@ class Tieba(object):
     def qr_login_set_cookie(self, bduss):
         tt = self.get_time_stamp()
         r = self.s.get(
-            url=self.QR_LOGIN_URL,
-            params={
+            url = self.QR_LOGIN_URL,
+            params = {
                 'v': tt,
                 'bduss': bduss,
                 'u': self.INDEX_URL,
@@ -97,7 +95,7 @@ class Tieba(object):
                 'time': tt[10:]
             }
         )
-        rsp = json.loads(r.text.replace("'", '"'))
+        rsp = json.loads(r.text.replace("'",'"'))
         bdu = rsp['data']['hao123Param']
         self.s.get(f'{self.HAO123_URL}?bdu={bdu}&t={tt}')
         self.s.get(self.MY_LIKE_URL)
@@ -119,8 +117,8 @@ class Tieba(object):
     def get_qr_code(self):
         tt = self.get_time_stamp()
         r = self.s.get(
-            url=self.QR_CODE_URL,
-            params={
+            url = self.QR_CODE_URL,
+            params = {
                 'lp': 'pc',
                 'qrloginfrom': 'pc',
                 'apiver': 'v3',
@@ -129,8 +127,7 @@ class Tieba(object):
                 '_': tt
             }
         )
-        # app = input('有百度贴吧APP / 百度APP，请输入 1 ，没有请输入 2\n：')
-        app = '1'
+        app = input('有百度贴吧APP / 百度APP，请输入 1 ，没有请输入 2\n：')
         imgurl = r.json()['imgurl']
         while True:
             if app == '1':
@@ -173,11 +170,11 @@ class Tieba(object):
     def calc_sign(self, str_dict):
         md5 = hashlib.md5()
         md5.update((
-                           ''.join(
-                               '%s=%s' % (k, v)
-                               for k, v in str_dict.items()
-                           ) + self.MD5_KEY).encode('utf-8')
-                   )
+            ''.join(
+                '%s=%s' % (k, v)
+                for k, v in str_dict.items()
+            ) + self.MD5_KEY).encode('utf-8')
+        )
         return md5.hexdigest().upper()
 
     def get_bduss_stoken(self):
@@ -196,10 +193,10 @@ class Tieba(object):
         for _ in range(5):
             try:
                 r = requests.post(
-                    url=self.LIKES_URL,
-                    data=data,
-                    cookies=self.s.cookies,
-                    headers=self.headers,
+                    url = self.LIKES_URL,
+                    data = data,
+                    cookies = self.s.cookies,
+                    headers = self.headers,
                     timeout=3
                 )
             except:
@@ -252,10 +249,10 @@ class Tieba(object):
         for _ in range(5):
             try:
                 r = requests.post(
-                    url=self.SIGN_URL,
-                    data=data,
-                    cookies=self.s.cookies,
-                    headers=self.headers,
+                    url = self.SIGN_URL,
+                    data = data,
+                    cookies = self.s.cookies,
+                    headers = self.headers,
                     timeout=5
                 )
                 rsp = r.json()
@@ -266,7 +263,7 @@ class Tieba(object):
             if rsp['user_info']['is_sign_in'] == 1:
                 self.tb.add_row([tieba, '签到成功'])
         except:
-            if rsp['error_msg'] == 'need vcode':  # 这里也不清楚手机端需不需要验证码
+            if rsp['error_msg'] == 'need vcode': # 这里也不清楚手机端需不需要验证码
                 captcha_vcode_str = rsp['data']['captcha_vcode_str']
                 captcha_url = f'{self.GEN_IMG_URL}?{captcha_vcode_str}'
                 captcha_input_str = self.recognize_captcha(captcha_url)
@@ -279,7 +276,7 @@ class Tieba(object):
         for tieba in tiebas:
             t = Thread(target=self.sign, args=(tieba,))
             threads.append(t)
-
+            
         for tieba in threads:
             tieba.start()
 
@@ -310,43 +307,10 @@ class Tieba(object):
             print('总共签到{}个贴吧,耗时:{}秒'.format(
                 len(self.ALL_TIEBA_LIST),
                 int(end_time - start_time)
+                )
             )
-            )
-
-
-class Tool:
-    def __init__(self):
-        self.user_lists = []
-        self.time_table = []
-
-    def parse_config(self):
-        with open('tieba_conf.json', 'r') as f:
-            conf_dict = json.loads(f.read())
-            f.close()
-        self.user_lists = conf_dict['userNames']
-        self.time_table = conf_dict['timeTable']
-        print('当前用户列表：', self.user_lists)
-        print('当前签到时间表: ', self.time_table)
-
-    def get_user_lists(self):
-        return self.user_lists
-
-    def get_time_table(self):
-        return self.time_table
-
-
+ 
 if __name__ == "__main__":
-    tool = Tool()
-    tool.parse_config()
-
-    tieba = Tieba(tool.get_user_lists())
-    # 先执行一次，做登录以及cookies保存
+    user_lists = [''] # 贴吧用户名列表，例如 ['张三', '李四']
+    tieba = Tieba(user_lists)
     tieba.main()
-    for time in tool.get_time_table():
-        schedule.every().day.at(time).do(tieba.main)
-
-    try:
-        while True:
-            schedule.run_pending()
-    except KeyboardInterrupt:
-        print("close tieba sign task.")
