@@ -341,9 +341,13 @@ if __name__ == "__main__":
 
     tieba = Tieba(tool.get_user_lists())
     # 先执行一次，做登录以及cookies保存
-    tieba.main()
-    for time in tool.get_time_table():
-        schedule.every().day.at(time).do(tieba.main)
+
+    try:
+        tieba.main()
+        for time in tool.get_time_table():
+            schedule.every().day.at(time).do(tieba.main)
+    except Exception as e:
+        print(e)
 
     try:
         while True:
