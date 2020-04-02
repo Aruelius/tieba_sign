@@ -72,8 +72,7 @@ class Tieba(object):
                 'callback': '',
                 'tt': tt,
                 '_': tt
-            },
-            verify=False
+            }
         )
         rsp = r.text.replace('(', '').replace(')', '')
         rsp_json = json.loads(rsp)
@@ -98,16 +97,15 @@ class Tieba(object):
                 'tt': tt,
                 'alg': 'v1',
                 'time': tt[10:]
-            },
-            verify=False
+            }
         )
         rsp = json.loads(r.text.replace("'", '"'))
         bdu = rsp['data']['hao123Param']
-        self.s.get(f'{self.HAO123_URL}?bdu={bdu}&t={tt}',verify=False)
-        self.s.get(self.MY_LIKE_URL,verify=False)
+        self.s.get(f'{self.HAO123_URL}?bdu={bdu}&t={tt}')
+        self.s.get(self.MY_LIKE_URL)
 
     def down_qr_code(self, imgurl):
-        r = self.s.get(f'https://{imgurl}',verify=False)
+        r = self.s.get(f'https://{imgurl}')
         with open('qrcode.png', 'wb') as f:
             f.write(r.content)
             f.close()
@@ -131,8 +129,7 @@ class Tieba(object):
                 'tt': tt,
                 'tpl': 'tb',
                 '_': tt
-            },
-            verify=False
+            }
         )
         # app = input('有百度贴吧APP / 百度APP，请输入 1 ，没有请输入 2\n：')
         app = '1'
@@ -171,7 +168,7 @@ class Tieba(object):
         self.start(tiebas)
 
     def check_login(self):
-        r = self.s.get(self.TBS_URL, verify=False)
+        r = self.s.get(self.TBS_URL)
         rsp = r.json()
         return True if rsp['is_login'] == 1 else False
 
@@ -212,7 +209,7 @@ class Tieba(object):
         return [tieba['name'] for tieba in r.json()['forum_list']]
 
     def get_tbs(self):
-        r = self.s.get(self.TBS_URL,verify=False).json()
+        r = self.s.get(self.TBS_URL).json()
         return r['tbs']
 
     def recognize_captcha(self, remote_url, rec_times=3):
