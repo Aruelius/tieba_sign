@@ -24,7 +24,7 @@ then
     docker logs -f $check_results
 elif [ ${1} -eq 1 ]
 then
-    cd full_funtion
+    cd fullFunction
     docker build -t tieba_sign_full:latest .
     docker run -it --name tieba_sign_full tieba_sign_full:latest /bin/sh
 else

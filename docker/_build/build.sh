@@ -22,7 +22,7 @@ then
     docker build -t tieba_sign_min:latest .
 elif [ ${1} -eq 1 ]
 then
-    cd full_funtion
+    cd fullFuction
     docker build -t tieba_sign_full:latest .
 else
     echo "invalid mode: ${1}"
