@@ -354,5 +354,6 @@ if __name__ == "__main__":
     try:
         while True:
             schedule.run_pending()
+            time.sleep(5)
     except KeyboardInterrupt:
         print("close tieba sign task.")
