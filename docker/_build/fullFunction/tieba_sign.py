@@ -4,11 +4,11 @@ import hashlib
 import json
 import os
 import prettytable as pt
-# import pyzbar.pyzbar as pyzbar
+import pyzbar.pyzbar as pyzbar
 import requests
 import time
 from io import BytesIO
-# from PIL import Image
+from PIL import Image
 from random import choice
 from threading import Thread
 import schedule
@@ -131,8 +131,7 @@ class Tieba(object):
                 '_': tt
             }
         )
-        # app = input('有百度贴吧APP / 百度APP，请输入 1 ，没有请输入 2\n：')
-        app = '1'
+        app = input('有百度贴吧APP / 百度APP，请输入 1 ，没有请输入 2\n：')
         imgurl = r.json()['imgurl']
         while True:
             if app == '1':

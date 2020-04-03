@@ -23,8 +23,7 @@ then
     docker logs -f "$check_results"
 elif [ ${1} -eq 1 ]
 then
-    check_results=$(docker run -it --name tieba_sign_full ck123pm/tieba_sign_full)
-    docker logs -f "$check_results"
+    docker run -it --name tieba_sign_full ck123pm/tieba_sign_full /bin/sh
 else
     echo "invalid mode: ${1}"
     exit -1
