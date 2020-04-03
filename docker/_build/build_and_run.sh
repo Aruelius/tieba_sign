@@ -26,8 +26,7 @@ elif [ ${1} -eq 1 ]
 then
     cd full_funtion
     docker build -t tieba_sign_full:latest .
-    check_results=`docker run -it --name tieba_sign_full tieba_sign_full:latest`
-    docker logs -f $check_results
+    docker run -it --name tieba_sign_full tieba_sign_full:latest /bin/sh
 else
     echo "invalid mode: ${1}"
     exit -1
