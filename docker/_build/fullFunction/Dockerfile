@@ -6,7 +6,7 @@ COPY requirements.txt tieba_conf.json tieba_sign.py /home/tieba/
 
 WORKDIR /home/tieba
 
-RUN apt-get update && apt install -y libzbar
+RUN apt-get update && apt install -y libzbar-dev
 
 RUN pip install -r requirements.txt
 
