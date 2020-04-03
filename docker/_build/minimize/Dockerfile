@@ -6,8 +6,12 @@ COPY requirements.txt tieba_conf.json tieba_sign.py /home/tieba/
 
 WORKDIR /home/tieba
 
-RUN pip install -r requirements.txt
+RUN apk add --no-cache tzdata \
+    && ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
+    && echo "Asia/Shanghai" > /etc/timezone \
+    && pip install -r requirements.txt
 
+ENV TZ Asia/Shanghai
 
 
 ENTRYPOINT ["python","tieba_sign.py"]
