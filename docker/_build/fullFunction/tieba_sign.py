@@ -290,6 +290,7 @@ class Tieba(object):
     def main(self):
         start_time = time.time()
         print(time.strftime("当前时间: %Y-%m-%d %H:%M:%S", time.localtime()))
+        self.ALL_TIEBA_LIST.clear()
         for user in self.users:
             print(f'当前登陆: {user}')
             if os.path.exists('.%s' % user):
@@ -322,7 +323,7 @@ class Tool:
         self.time_table = []
 
     def parse_config(self):
-        with open('tieba_conf.json', 'r') as f:
+        with open('../minimize/tieba_conf.json', 'r') as f:
             conf_dict = json.loads(f.read())
             f.close()
         self.user_lists = conf_dict['userNames']
