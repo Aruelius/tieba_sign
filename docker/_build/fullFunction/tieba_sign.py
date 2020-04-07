@@ -19,7 +19,6 @@ class Tieba(object):
         self.users = users
         self.tb = pt.PrettyTable()
         self.s = requests.session()
-        self.s.keep_alive = False
 
         self.MD5_KEY = 'tiebaclient!!!'
         self.CAPTCHA_API = 'http://222.187.238.211:10086/b'
@@ -41,8 +40,7 @@ class Tieba(object):
         self.headers = {
             'Content-Type': 'application/x-www-form-urlencoded',
             'Host': 'c.tieba.baidu.com',
-            'User-Agent': 'bdtb for Android 10.3.8.10',
-            'Connection': 'close'
+            'User-Agent': 'bdtb for Android 10.3.8.10'
         }
 
     def get_time_stamp(self):
