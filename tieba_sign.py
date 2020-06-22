@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#coding=utf-8
+# coding=utf-8
 import hashlib
 import json
 import os
@@ -11,6 +11,7 @@ from io import BytesIO
 from PIL import Image
 from random import choice
 from threading import Thread
+
 
 class Tieba(object):
     def __init__(self, users):
@@ -56,12 +57,12 @@ class Tieba(object):
             f.close()
         for k, v in cookie_dict.items():
             self.s.cookies.set(k, v)
-            
+
     def unicast(self, channel_id):
         tt = self.get_time_stamp()
         r = self.s.get(
-            url = self.UNICAST_URL,
-            params = {
+            url=self.UNICAST_URL,
+            params={
                 'channel_id': channel_id,
                 'tpl': 'tb',
                 'apiver': 'v3',
@@ -70,7 +71,7 @@ class Tieba(object):
                 '_': tt
             }
         )
-        rsp = r.text.replace('(','').replace(')','')
+        rsp = r.text.replace('(', '').replace(')', '')
         rsp_json = json.loads(rsp)
         try:
             channel_v = json.loads(rsp_json['channel_v'])
@@ -81,8 +82,8 @@ class Tieba(object):
     def qr_login_set_cookie(self, bduss):
         tt = self.get_time_stamp()
         r = self.s.get(
-            url = self.QR_LOGIN_URL,
-            params = {
+            url=self.QR_LOGIN_URL,
+            params={
                 'v': tt,
                 'bduss': bduss,
                 'u': self.INDEX_URL,
@@ -95,7 +96,13 @@ class Tieba(object):
                 'time': tt[10:]
             }
         )
-        rsp = json.loads(r.text.replace("'",'"'))
+        res = r.text
+        res = res.replace("'data'", '"data"')
+        res = res.replace("\r", "")
+        res = res.replace("\n", "\n")
+        res = res.replace("\&", "&")
+        print(res)
+        rsp = json.loads(res)
         bdu = rsp['data']['hao123Param']
         self.s.get(f'{self.HAO123_URL}?bdu={bdu}&t={tt}')
         self.s.get(self.MY_LIKE_URL)
@@ -117,8 +124,8 @@ class Tieba(object):
     def get_qr_code(self):
         tt = self.get_time_stamp()
         r = self.s.get(
-            url = self.QR_CODE_URL,
-            params = {
+            url=self.QR_CODE_URL,
+            params={
                 'lp': 'pc',
                 'qrloginfrom': 'pc',
                 'apiver': 'v3',
@@ -146,7 +153,8 @@ class Tieba(object):
         channel_id = self.get_qr_code()
         while True:
             rsp = self.unicast(channel_id)
-            if rsp and rsp['status'] == 1: print('扫描成功,请在手机端确认登录!')
+            if rsp and rsp['status'] == 1:
+                print('扫描成功,请在手机端确认登录!')
             if rsp and rsp['status'] == 0:
                 print('确认登陆成功')
                 bduss = rsp['v']
@@ -193,10 +201,10 @@ class Tieba(object):
         for _ in range(5):
             try:
                 r = requests.post(
-                    url = self.LIKES_URL,
-                    data = data,
-                    cookies = self.s.cookies,
-                    headers = self.headers,
+                    url=self.LIKES_URL,
+                    data=data,
+                    cookies=self.s.cookies,
+                    headers=self.headers,
                     timeout=3
                 )
             except:
@@ -219,7 +227,8 @@ class Tieba(object):
                 except Exception as ee:
                     print(ee)
 
-            files = {'image_file': ('captcha.jpg', BytesIO(response.content), 'application')}
+            files = {'image_file': ('captcha.jpg', BytesIO(
+                response.content), 'application')}
             r = requests.post(self.CAPTCHA_API, files=files)
             try:
                 predict_text = json.loads(r.text)["value"]
@@ -249,10 +258,10 @@ class Tieba(object):
         for _ in range(5):
             try:
                 r = requests.post(
-                    url = self.SIGN_URL,
-                    data = data,
-                    cookies = self.s.cookies,
-                    headers = self.headers,
+                    url=self.SIGN_URL,
+                    data=data,
+                    cookies=self.s.cookies,
+                    headers=self.headers,
                     timeout=5
                 )
                 rsp = r.json()
@@ -263,11 +272,12 @@ class Tieba(object):
             if rsp['user_info']['is_sign_in'] == 1:
                 self.tb.add_row([tieba, '签到成功'])
         except:
-            if rsp['error_msg'] == 'need vcode': # 这里也不清楚手机端需不需要验证码
+            if rsp['error_msg'] == 'need vcode':  # 这里也不清楚手机端需不需要验证码
                 captcha_vcode_str = rsp['data']['captcha_vcode_str']
                 captcha_url = f'{self.GEN_IMG_URL}?{captcha_vcode_str}'
                 captcha_input_str = self.recognize_captcha(captcha_url)
-                self.sign_with_vcode(tieba, tbs, captcha_input_str, captcha_vcode_str)
+                self.sign_with_vcode(
+                    tieba, tbs, captcha_input_str, captcha_vcode_str)
             else:
                 self.tb.add_row([tieba, rsp['error_msg']])
 
@@ -276,7 +286,7 @@ class Tieba(object):
         for tieba in tiebas:
             t = Thread(target=self.sign, args=(tieba,))
             threads.append(t)
-            
+
         for tieba in threads:
             tieba.start()
 
@@ -307,10 +317,11 @@ class Tieba(object):
             print('总共签到{}个贴吧,耗时:{}秒'.format(
                 len(self.ALL_TIEBA_LIST),
                 int(end_time - start_time)
-                )
             )
- 
+            )
+
+
 if __name__ == "__main__":
-    user_lists = [''] # 贴吧用户名列表，例如 ['张三', '李四']
+    user_lists = ['']  # 贴吧用户名列表，例如 ['张三', '李四']
     tieba = Tieba(user_lists)
     tieba.main()
