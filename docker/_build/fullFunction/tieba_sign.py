@@ -286,34 +286,45 @@ class Tieba(object):
             tieba.join()
 
     def main(self):
-        start_time = time.time()
-        print(time.strftime("当前时间: %Y-%m-%d %H:%M:%S", time.localtime()))
-        self.ALL_TIEBA_LIST.clear()
-        for user in self.users:
-            print(f'当前登陆: {user}')
-            if os.path.exists('.%s' % user):
-                self.load_cookie(user)
-                if self.check_login():
-                    print('CookieLogin: True')
-                    tiebas = self.get_like_tiebas()
-                    self.ALL_TIEBA_LIST.extend(tiebas)
-                    self.start(tiebas)
+        try:
+            start_time = time.time()
+            print(time.strftime("当前时间: %Y-%m-%d %H:%M:%S", time.localtime()))
+            self.ALL_TIEBA_LIST.clear()
+            for user in self.users:
+                print(f'当前登陆: {user}')
+                if os.path.exists('.%s' % user):
+                    self.load_cookie(user)
+                    if self.check_login():
+                        print('CookieLogin: True')
+                        tiebas = self.get_like_tiebas()
+                        self.ALL_TIEBA_LIST.extend(tiebas)
+                        self.start(tiebas)
+                    else:
+                        print('%sCookies失效...正在重新登录...' % user)
+                        self.login(user)
                 else:
-                    print('%sCookies失效...正在重新登录...' % user)
                     self.login(user)
+                self.tb.align = 'l'
+                print(self.tb)
+                self.tb.clear_rows()
             else:
-                self.login(user)
-            self.tb.align = 'l'
-            print(self.tb)
-            self.tb.clear_rows()
-        else:
-            end_time = time.time()
-            print('总共签到{}个贴吧,耗时:{}秒'.format(
-                len(self.ALL_TIEBA_LIST),
-                int(end_time - start_time)
-            )
-            )
-
+                end_time = time.time()
+                print('总共签到{}个贴吧,耗时:{}秒'.format(
+                    len(self.ALL_TIEBA_LIST),
+                    int(end_time - start_time)
+                )
+                )
+        except requests.ConnectionError as e:
+            print("OOPS!! Connection Error. Make sure you are connected to Internet. Technical Details given below.\n")
+            print(str(e))
+        except requests.Timeout as e:
+            print("OOPS!! Timeout Error")
+            print(str(e))
+        except requests.RequestException as e:
+            print("OOPS!! General Error")
+            print(str(e))
+        except Exception as e:
+            print("General Error, ", str(e))
 
 class Tool:
     def __init__(self):
@@ -321,7 +332,7 @@ class Tool:
         self.time_table = []
 
     def parse_config(self):
-        with open('../minimize/tieba_conf.json', 'r') as f:
+        with open('tieba_conf.json', 'r') as f:
             conf_dict = json.loads(f.read())
             f.close()
         self.user_lists = conf_dict['userNames']
