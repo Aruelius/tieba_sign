@@ -18,11 +18,11 @@ fi
 
 if [ ${1} -eq 0 ]
 then
-    check_results=`docker run -it -d --name tieba_sign_min tieba_sign_min:latest`
+    check_results=`docker run -it --restart=always -d --name tieba_sign_min tieba_sign_min:latest`
     docker logs -f $check_results
 elif [ ${1} -eq 1 ]
 then
-    docker run -it --name tieba_sign_full tieba_sign_full:latest /bin/bash
+    docker run -it --restart=always --name tieba_sign_full tieba_sign_full:latest /bin/bash
 else
     echo "invalid mode: ${1}"
     exit -1
