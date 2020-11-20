@@ -19,6 +19,7 @@ class Tieba(object):
         self.users = users
         self.tb = pt.PrettyTable()
         self.s = requests.session()
+        self.total_day = 0
 
         self.MD5_KEY = 'tiebaclient!!!'
         self.CAPTCHA_API = 'http://222.187.238.211:10086/b'
@@ -286,6 +287,12 @@ class Tieba(object):
         for tieba in threads:
             tieba.join()
 
+    def sendSucess(self,total_day):
+        sendToServerChan("签到成功"+str(total_day)+"天","签到成功啦")
+
+    def sendError(self,desc):
+        sendToServerChan("签到失败了！",desc)
+
     def main(self):
         try:
             start_time = time.time()
@@ -315,18 +322,25 @@ class Tieba(object):
                     int(end_time - start_time)
                 )
                 )
+                self.total_day = self.total_day+1
+                # send to serverChan
+                self.sendSucess(self.total_day)
+                print('已经累计为您签到{}天'.format(self.total_day))
         except requests.ConnectionError as e:
             print("OOPS!! Connection Error. Make sure you are connected to Internet. Technical Details given below.\n")
             print(str(e))
+            self.sendError(str(e))
         except requests.Timeout as e:
             print("OOPS!! Timeout Error")
             print(str(e))
+            self.sendError(str(e))
         except requests.RequestException as e:
             print("OOPS!! General Error")
             print(str(e))
+            self.sendError(str(e))
         except Exception as e:
             print("General Error, ", str(e))
-
+            self.sendError(str(e))
 
 class Tool:
     def __init__(self):
@@ -348,6 +362,15 @@ class Tool:
     def get_time_table(self):
         return self.time_table
 
+
+def sendToServerChan(text,desc):
+    serverChanKey = ""
+
+    url = "https://sc.ftqq.com/"+serverChanKey+".send"
+    d = {"text":text, "desp":desc}
+    r = requests.post(url, data = d)
+    print(r.text)
+    print("发送给server酱成功！")
 
 if __name__ == "__main__":
     tool = Tool()
