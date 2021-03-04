@@ -20,6 +20,7 @@ class Tieba(object):
         self.tb = pt.PrettyTable()
         self.s = requests.session()
         self.total_day = 0
+        self.fail_list = []
 
         self.MD5_KEY = 'tiebaclient!!!'
         self.CAPTCHA_API = 'http://222.187.238.211:10086/b'
@@ -274,6 +275,7 @@ class Tieba(object):
                 self.sign_with_vcode(tieba, tbs, captcha_input_str, captcha_vcode_str)
             else:
                 self.tb.add_row([tieba, rsp['error_msg']])
+                self.fail_list.append(tieba)
 
     def start(self, tiebas):
         threads = []
@@ -324,7 +326,12 @@ class Tieba(object):
                 )
                 self.total_day = self.total_day+1
                 # send to serverChan
-                self.sendSucess(self.total_day)
+                if len(self.fail_list) == 0:
+                    self.sendSucess(self.total_day)
+                else:
+                    self.sendError("签到失败贴吧: "+','.join(self.fail_list))
+                    self.fail_list.clear()
+
                 print('已经累计为您签到{}天'.format(self.total_day))
         except requests.ConnectionError as e:
             print("OOPS!! Connection Error. Make sure you are connected to Internet. Technical Details given below.\n")
