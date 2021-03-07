@@ -1,0 +1,5 @@
+requests
+pyzbar
+Pillow
+prettytable
+schedule
