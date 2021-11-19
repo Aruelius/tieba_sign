@@ -101,7 +101,6 @@ class Tieba(object):
         res = res.replace("\r", "")
         res = res.replace("\n", "\n")
         res = res.replace("\&", "&")
-        print(res)
         rsp = json.loads(res)
         bdu = rsp['data']['hao123Param']
         self.s.get(f'{self.HAO123_URL}?bdu={bdu}&t={tt}')
