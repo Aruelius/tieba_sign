@@ -95,7 +95,7 @@ class Tieba(object):
                 'time': tt[10:]
             }
         )
-        rsp = json.loads(r.text.replace("'",'"'))
+        rsp = json.loads(r.text.replace("'",'"').replace('\\', '\\\\'))
         bdu = rsp['data']['hao123Param']
         self.s.get(f'{self.HAO123_URL}?bdu={bdu}&t={tt}')
         self.s.get(self.MY_LIKE_URL)
